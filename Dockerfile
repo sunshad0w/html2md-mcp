@@ -12,6 +12,9 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.vendor="sunshad0w"
 LABEL keywords="mcp,html-to-markdown,web-scraping,claude,playwright,markdown,html-converter"
 
+# MCP Registry label (required for MCP registry)
+LABEL io.modelcontextprotocol.server.name="io.github.sunshad0w/html2md"
+
 # Set working directory
 WORKDIR /app
 

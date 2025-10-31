@@ -1,0 +1,51 @@
+{
+  "$schema": "https://registry.modelcontextprotocol.io/schemas/server.json",
+  "name": "io.github.sunshad0w/html2md",
+  "title": "HTML to Markdown MCP Server",
+  "description": "Converts HTML webpages to clean Markdown format. Reduces HTML size by 90-95% while preserving tables, images, and links. Supports both fast fetch mode and browser mode with Playwright for JavaScript-heavy sites.",
+  "version": "0.2.0",
+  "license": "MIT",
+  "author": {
+    "name": "sunshad0w",
+    "url": "https://github.com/sunshad0w"
+  },
+  "homepage": "https://github.com/sunshad0w/html2md-mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sunshad0w/html2md-mcp"
+  },
+  "keywords": [
+    "html",
+    "markdown",
+    "converter",
+    "web-scraping",
+    "playwright",
+    "mcp",
+    "claude"
+  ],
+  "packages": [
+    {
+      "registry": "https://docker.io",
+      "identifier": "sunshad0w/html2md-mcp",
+      "transport": "stdio"
+    }
+  ],
+  "tools": [
+    {
+      "name": "html_to_markdown",
+      "description": "Converts HTML from a URL to clean Markdown format",
+      "parameters": {
+        "url": "URL of the webpage to convert",
+        "include_images": "Include images in Markdown (default: true)",
+        "include_tables": "Include tables in Markdown (default: true)",
+        "include_links": "Include links in Markdown (default: true)",
+        "fetch_method": "Fetch method: 'fetch' (fast) or 'playwright' (JavaScript support)",
+        "browser_type": "Browser type for Playwright: 'chromium', 'firefox', 'webkit'",
+        "timeout": "Request timeout in seconds (5-120, default: 30)",
+        "max_size": "Maximum content size in bytes (1MB-50MB, default: 10MB)",
+        "use_cache": "Enable caching for faster repeated conversions (default: false)",
+        "cache_ttl": "Cache time-to-live in seconds (60-86400, default: 3600)"
+      }
+    }
+  ]
+}
