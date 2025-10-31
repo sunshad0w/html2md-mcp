@@ -1,6 +1,17 @@
 # Use Python 3.11 slim image
 FROM python:3.11-slim
 
+# Metadata labels
+LABEL org.opencontainers.image.title="HTML to Markdown MCP Server"
+LABEL org.opencontainers.image.description="MCP server for converting HTML webpages to clean Markdown format. Reduces HTML size by 90-95% while preserving tables, images, and links."
+LABEL org.opencontainers.image.authors="sunshad0w"
+LABEL org.opencontainers.image.url="https://github.com/sunshad0w/html2md-mcp"
+LABEL org.opencontainers.image.source="https://github.com/sunshad0w/html2md-mcp"
+LABEL org.opencontainers.image.version="0.2.0"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.vendor="sunshad0w"
+LABEL keywords="mcp,html-to-markdown,web-scraping,claude,playwright,markdown,html-converter"
+
 # Set working directory
 WORKDIR /app
 
