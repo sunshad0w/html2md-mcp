@@ -25,7 +25,7 @@
   ],
   "packages": [
     {
-      "registryType": "docker",
+      "registryType": "oci",
       "registryBaseUrl": "https://docker.io",
       "identifier": "sunshad0w/html2md-mcp",
       "transport": {
