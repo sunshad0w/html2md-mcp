@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "html2md-mcp"
-version = "0.2.0"
-description = "MCP server for minimize and converting HTML to Markdown with browser support and authentication"
+version = "0.3.0"
+description = "MCP server for converting HTML to Markdown with browser support, section extraction, and auto-summary for large documents"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -43,6 +43,7 @@ dependencies = [
     "requests>=2.31.0",
     "httpx>=0.27.0",
     "playwright>=1.40.0",
+    "tiktoken>=0.7.0",
 ]
 
 [project.urls]

@@ -112,6 +112,26 @@ async def list_tools() -> list[Tool]:
                         "description": "Use browser profile with cookies (requires playwright)",
                         "default": False,
                     },
+                    "return_summary": {
+                        "type": "boolean",
+                        "description": "Return summary with metadata instead of full content (useful for large documents)",
+                        "default": False,
+                    },
+                    "max_tokens": {
+                        "type": "integer",
+                        "description": "Maximum tokens before auto-returning summary (default: 25000)",
+                        "default": 25000,
+                        "minimum": 1000,
+                        "maximum": 100000,
+                    },
+                    "section_id": {
+                        "type": "string",
+                        "description": "Extract only section with this HTML anchor ID (e.g., 'PRD1480'). Mutually exclusive with section_heading.",
+                    },
+                    "section_heading": {
+                        "type": "string",
+                        "description": "Extract only section with this heading text (e.g., '7.2 Frontend'). Mutually exclusive with section_id.",
+                    },
                 },
                 "required": ["url"],
             },
@@ -151,10 +171,23 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
     headless = arguments.get("headless", True)
     wait_for = arguments.get("wait_for", "networkidle")
     use_user_profile = arguments.get("use_user_profile", False)
+    return_summary = arguments.get("return_summary", False)
+    max_tokens = arguments.get("max_tokens", 25000)
+    section_id = arguments.get("section_id")
+    section_heading = arguments.get("section_heading")
 
     # Validate required arguments
     if not url:
         return [TextContent(type="text", text="Error: 'url' parameter is required")]
+
+    # Validate mutually exclusive parameters
+    if section_id and section_heading:
+        return [
+            TextContent(
+                type="text",
+                text="Error: 'section_id' and 'section_heading' are mutually exclusive. Provide only one.",
+            )
+        ]
 
     try:
         logger.info(f"Processing request for URL: {url}")
@@ -177,21 +210,65 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
                 headless=headless,
                 wait_for=wait_for,
                 use_user_profile=use_user_profile,
+                return_summary=return_summary,
+                max_tokens=max_tokens,
+                section_id=section_id,
+                section_heading=section_heading,
             ),
         )
 
-        # Format success response
-        markdown = str(result["markdown"])
-        original_size = int(result["original_size"])
-        markdown_size = int(result["markdown_size"])
-        compression = 100 - (markdown_size / original_size * 100)
+        # Check if result is a summary or full content
+        if result.get("type") == "summary":
+            # Format summary response
+            import json
 
-        response = f"""# Conversion Successful
+            stats = result["statistics"]
+            toc = result.get("table_of_contents", [])
+            toc_preview = "\n".join(toc[:20])
+            if len(toc) > 20:
+                toc_preview += f"\n... and {len(toc) - 20} more headings"
+
+            response = f"""# Document Too Large - Summary Returned
+
+**URL:** {url}
+**Full content saved to:** `{result['saved_to']}`
+
+## Statistics
+- **Original HTML:** {stats['original_size_human']} ({stats['original_size_bytes']:,} bytes)
+- **Cleaned HTML:** {stats['cleaned_size_human']} ({stats['cleaned_size_bytes']:,} bytes)
+- **Markdown:** {stats['markdown_size_human']} ({stats['markdown_size_bytes']:,} bytes)
+- **Estimated tokens:** {stats['estimated_tokens']:,}
+- **Compression:** {stats['compression_percent']} ({stats['compression_ratio']})
+
+## Table of Contents
+{toc_preview}
+
+## Preview (first 500 words)
+{result['preview']}
+
+---
+
+{result['help']}
+"""
+        else:
+            # Format full content response
+            markdown = str(result["markdown"])
+            original_size = int(result["original_size"])
+            markdown_size = int(result["markdown_size"])
+            estimated_tokens = int(result.get("estimated_tokens", 0))
+            compression = 100 - (markdown_size / original_size * 100)
+
+            section_info = ""
+            if section_id or section_heading:
+                section_info = f"\n**Section extracted:** {section_id if section_id else section_heading}"
+
+            response = f"""# Conversion Successful
 
 **URL:** {url}
 **Original Size:** {format_bytes(original_size)}
 **Markdown Size:** {format_bytes(markdown_size)}
-**Compression:** {compression:.1f}%
+**Estimated Tokens:** {estimated_tokens:,}
+**Compression:** {compression:.1f}%{section_info}
 
 ---
 

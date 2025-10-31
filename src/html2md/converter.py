@@ -205,6 +205,10 @@ def html_to_markdown(
     headless: bool = True,
     wait_for: Literal["load", "domcontentloaded", "networkidle"] = "networkidle",
     use_user_profile: bool = False,
+    return_summary: bool = False,
+    max_tokens: int = 25000,
+    section_id: str | None = None,
+    section_heading: str | None = None,
 ) -> dict[str, Any]:
     """
     Complete workflow: fetch URL, clean HTML, and convert to Markdown.
@@ -213,8 +217,10 @@ def html_to_markdown(
     1. Check cache if enabled
     2. Fetch HTML from URL (using requests or playwright)
     3. Clean HTML using BeautifulSoup
-    4. Convert to Markdown using trafilatura
-    5. Store in cache if enabled
+    4. Extract section if requested (before or after markdown conversion)
+    5. Convert to Markdown using trafilatura
+    6. Return summary if document exceeds token limit
+    7. Store in cache if enabled
 
     Args:
         url: URL to fetch and convert
@@ -230,13 +236,18 @@ def html_to_markdown(
         headless: Run browser in headless mode (default: True)
         wait_for: Wait strategy for page load (default: "networkidle")
         use_user_profile: Use user's browser profile with cookies (default: False)
+        return_summary: Force return summary instead of full content (default: False)
+        max_tokens: Maximum tokens before auto-returning summary (default: 25000)
+        section_id: Extract section by HTML anchor ID (e.g., "PRD1480")
+        section_heading: Extract section by heading text (e.g., "7.2 Frontend")
 
     Returns:
-        Dictionary with 'markdown' and 'url' keys
+        Dictionary with 'markdown' and 'url' keys, or summary dict if too large
 
     Raises:
         FetchError: If URL fetching fails
         ParseError: If HTML parsing or conversion fails
+        ValueError: If section extraction fails
     """
     logger.info(f"Starting conversion workflow for URL: {url}")
 
@@ -275,7 +286,18 @@ def html_to_markdown(
     # Step 2: Clean HTML
     cleaned_html = clean_html(html)
 
-    # Step 3: Convert to Markdown
+    # Step 3: Extract section if requested (from HTML before markdown conversion)
+    if section_id or section_heading:
+        from .sections import extract_section_from_html
+
+        logger.info(
+            f"Extracting section: {section_id if section_id else section_heading}"
+        )
+        cleaned_html = extract_section_from_html(
+            cleaned_html, section_id=section_id, section_heading=section_heading
+        )
+
+    # Step 4: Convert to Markdown
     markdown = convert_to_markdown(
         cleaned_html,
         include_images=include_images,
@@ -283,24 +305,52 @@ def html_to_markdown(
         include_links=include_links,
     )
 
-    result: dict[str, Any] = {
-        "url": url,
-        "markdown": markdown,
-        "original_size": len(html),
-        "cleaned_size": len(cleaned_html),
-        "markdown_size": len(markdown),
-    }
-
-    markdown_size = int(result["markdown_size"])
-    original_size = int(result["original_size"])
+    # Calculate sizes
+    original_size = len(html)
+    cleaned_size = len(cleaned_html)
+    markdown_size = len(markdown)
     compression = 100 - (markdown_size / original_size * 100)
 
     logger.info(
         f"Conversion complete. Original: {original_size} bytes, "
-        f"Cleaned: {result['cleaned_size']} bytes, "
+        f"Cleaned: {cleaned_size} bytes, "
         f"Markdown: {markdown_size} bytes "
         f"(compression: {compression:.1f}%)"
     )
+
+    # Step 5: Check if we should return summary instead of full content
+    from .sections import estimate_tokens, generate_summary
+
+    estimated_tokens = estimate_tokens(markdown)
+
+    # Return summary if:
+    # 1. Explicitly requested (return_summary=True), OR
+    # 2. Document exceeds max_tokens AND no section extraction was used
+    should_return_summary = return_summary or (
+        estimated_tokens > max_tokens and not (section_id or section_heading)
+    )
+
+    if should_return_summary:
+        logger.info(
+            f"Returning summary (tokens: {estimated_tokens}, max: {max_tokens})"
+        )
+        result = generate_summary(
+            markdown=markdown,
+            original_size=original_size,
+            cleaned_size=cleaned_size,
+            markdown_size=markdown_size,
+            url=url,
+        )
+    else:
+        # Return full content
+        result: dict[str, Any] = {
+            "url": url,
+            "markdown": markdown,
+            "original_size": original_size,
+            "cleaned_size": cleaned_size,
+            "markdown_size": markdown_size,
+            "estimated_tokens": estimated_tokens,
+        }
 
     # Store in cache if enabled
     if use_cache:
