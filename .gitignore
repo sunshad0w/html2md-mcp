@@ -58,3 +58,5 @@ test_env/
 
 # Distribution
 *.whl
+.mcpregistry_github_token
+.mcpregistry_registry_token
