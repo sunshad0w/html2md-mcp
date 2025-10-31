@@ -1,8 +1,8 @@
 {
-  "$schema": "https://registry.modelcontextprotocol.io/schemas/server.json",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
   "name": "io.github.sunshad0w/html2md",
   "title": "HTML to Markdown MCP Server",
-  "description": "Converts HTML webpages to clean Markdown format. Reduces HTML size by 90-95% while preserving tables, images, and links. Supports both fast fetch mode and browser mode with Playwright for JavaScript-heavy sites.",
+  "description": "Converts HTML to clean Markdown. Supports Playwright for JavaScript-heavy pages.",
   "version": "0.2.0",
   "license": "MIT",
   "author": {
@@ -11,8 +11,8 @@
   },
   "homepage": "https://github.com/sunshad0w/html2md-mcp",
   "repository": {
-    "type": "git",
-    "url": "https://github.com/sunshad0w/html2md-mcp"
+    "url": "https://github.com/sunshad0w/html2md-mcp",
+    "source": "github"
   },
   "keywords": [
     "html",
@@ -25,9 +25,12 @@
   ],
   "packages": [
     {
-      "registry": "https://docker.io",
+      "registryType": "docker",
+      "registryBaseUrl": "https://docker.io",
       "identifier": "sunshad0w/html2md-mcp",
-      "transport": "stdio"
+      "transport": {
+        "type": "stdio"
+      }
     }
   ],
   "tools": [
