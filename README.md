@@ -58,6 +58,42 @@ pip install -e .
 playwright install chromium
 ```
 
+### Docker Installation (Recommended for Production)
+
+The easiest way to use html2md is with Docker:
+
+```bash
+# Build the image
+docker build -t html2md .
+
+# Or use pre-built image (when published)
+docker pull your-registry/html2md:latest
+```
+
+For Claude Desktop, configure with Docker:
+
+```json
+{
+  "mcpServers": {
+    "html2md": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "html2md"
+      ]
+    }
+  }
+}
+```
+
+**Docker Image Features:**
+- Pre-installed Playwright with Chromium
+- Optimized for minimal size (~1GB)
+- Non-root user for security
+- Ready to use - no additional setup required
+
 ## Configuration
 
 Add the server to your Claude Desktop configuration file:

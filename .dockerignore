@@ -1,6 +1,3 @@
-CLAUDE.md
-PyPi_token
-
 # Python
 __pycache__/
 *.py[cod]
@@ -56,5 +53,17 @@ dmypy.json
 temp/
 test_env/
 
-# Distribution
-*.whl
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Documentation
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+!LICENSE
