@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
   "name": "io.github.sunshad0w/html2md",
   "title": "HTML to Markdown MCP Server",
-  "description": "Converts HTML to clean Markdown. Supports Playwright for JavaScript-heavy pages.",
-  "version": "0.2.0",
+  "description": "Converts HTML to Markdown with auto-summary and section extraction. Supports Playwright.",
+  "version": "0.3.0",
   "license": "MIT",
   "author": {
     "name": "sunshad0w",
@@ -46,7 +46,11 @@
         "timeout": "Request timeout in seconds (5-120, default: 30)",
         "max_size": "Maximum content size in bytes (1MB-50MB, default: 10MB)",
         "use_cache": "Enable caching for faster repeated conversions (default: false)",
-        "cache_ttl": "Cache time-to-live in seconds (60-86400, default: 3600)"
+        "cache_ttl": "Cache time-to-live in seconds (60-86400, default: 3600)",
+        "return_summary": "Return summary instead of full content (default: false)",
+        "max_tokens": "Maximum tokens before auto-returning summary (default: 25000)",
+        "section_id": "Extract section by HTML anchor ID",
+        "section_heading": "Extract section by heading text"
       }
     }
   ]
